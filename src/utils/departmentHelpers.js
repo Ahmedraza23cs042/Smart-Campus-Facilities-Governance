@@ -1,5 +1,40 @@
 import { DEPT_ABBREVIATIONS } from '../constants';
 
+// Full department names map - all MUET departments
+const DEPT_FULL_NAMES = {
+  'CS': 'Computer Systems Engineering',
+  'SW': 'Software Engineering',
+  'SE': 'Software Engineering',
+  'EL': 'Electrical Engineering',
+  'EE': 'Electronic Engineering',
+  'ME': 'Mechanical Engineering',
+  'CE': 'Civil Engineering',
+  'CHE': 'Chemical Engineering',
+  'BME': 'Biomedical Engineering',
+  'TE': 'Telecommunication Engineering',
+  'MTE': 'Mechatronics Engineering',
+  'TXE': 'Textile Engineering',
+  'IE': 'Industrial Engineering',
+  'AE': 'Automotive Engineering',
+  'CRP': 'Chemical & Polymer Engineering',
+  'MME': 'Metallurgy & Materials Engineering',
+  'MNE': 'Mining Engineering',
+  'PNG': 'Petroleum & Natural Gas Engineering',
+  'BSCS': 'BS Computer Science',
+  'BSES': 'BS Energy Systems',
+  'BSM': 'BS Mathematics',
+  'BSE': 'BS Software Engineering',
+  'BBA': 'Business Administration',
+  'ENERGY': 'Energy Systems Engineering',
+  'AGRI': 'Agricultural Engineering',
+  'AG': 'Agricultural Engineering',
+  'MT': 'Metallurgy Engineering',
+  'IN': 'Industrial Engineering',
+  'TX': 'Textile Engineering',
+  'AU': 'Automotive Engineering',
+  'PE': 'Petroleum Engineering',
+};
+
 export const getDeptAbbrev = (deptName) => {
   if (!deptName) return 'Room';
   return DEPT_ABBREVIATIONS[deptName] || deptName.split(' ').map(w => w[0]).join('').substring(0, 3).toUpperCase();
@@ -16,11 +51,30 @@ export const getDeptPresets = (deptName) => {
 
 export const getFullDepartmentName = (deptOrAbbrev) => {
   if (!deptOrAbbrev) return "General Campus";
-  const lookup = deptOrAbbrev.toUpperCase();
+  
+  const input = deptOrAbbrev.trim();
+  const lookup = input.toUpperCase();
+  
+  // 1. Check the hardcoded full names map first (most reliable)
+  if (DEPT_FULL_NAMES[lookup]) {
+    return DEPT_FULL_NAMES[lookup];
+  }
+  
+  // 2. Check DEPT_ABBREVIATIONS from constants
   const foundEntry = Object.entries(DEPT_ABBREVIATIONS).find(
     ([fullName, abbrev]) => abbrev === lookup || fullName.toUpperCase() === lookup
   );
-  return foundEntry ? foundEntry[0] : deptOrAbbrev;
+  if (foundEntry) {
+    return foundEntry[0];
+  }
+  
+  // 3. If input already has spaces, it's likely a full name - return as-is
+  if (input.includes(' ')) {
+    return input;
+  }
+  
+  // 4. Fallback - return original input
+  return input;
 };
 
 export const getDeptBannerStyle = (deptAbbrev) => {
@@ -52,7 +106,7 @@ export const getDeptBannerStyle = (deptAbbrev) => {
   return styles[deptAbbrev] || { bg: 'linear-gradient(105deg, #0f172a, #1e3a8a, #3b82f6)' };
 };
 
-// ✅ BUG FIX #12: regex widened to {2,4} for BS programs (BSCS, BSES, BSM, BSE, BBA)
+// Bug fix: regex widened to {2,4} for BS programs (BSCS, BSES, BSM, BSE, BBA)
 export const extractDeptAbbrev = (rollNumber) => {
   const m = rollNumber.match(/^\d{2}([A-Z]{2,4})\d+$/);
   return m ? m[1] : 'CS';
