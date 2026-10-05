@@ -1,0 +1,106 @@
+@import "tailwindcss";
+
+/* ═══════════════════════════════════════════════════════════
+   GLOBAL RESPONSIVE RESET — All Screens
+   ═══════════════════════════════════════════════════════════ */
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
+
+html {
+  font-size: 16px;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+  overflow-x: hidden;
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  max-width: 100vw;
+  overflow-x: hidden;
+  overscroll-behavior: none;
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+#root {
+  width: 100%;
+  min-height: 100vh;
+  min-height: 100dvh; /* Mobile browser bar dynamic */
+}
+
+/* ─── Prevent images/media overflow ─── */
+img, video, svg, canvas {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+
+/* ─── iOS auto-zoom fix on input focus ─── */
+@media (max-width: 768px) {
+  input, textarea, select, button {
+    font-size: 16px !important;
+  }
+}
+
+/* ─── Smooth touch scrolling ─── */
+.scrollbar-slim {
+  -webkit-overflow-scrolling: touch;
+  scroll-behavior: smooth;
+}
+
+p, h1, h2, h3, h4, h5, h6 {
+  overflow-wrap: break-word;
+  word-wrap: break-word;
+}
+
+/* ─── Long words / emails ─── */
+.break-all {
+  word-break: break-all;
+}
+
+/* ─── Mobile: no horizontal scroll on modals ─── */
+@media (max-width: 768px) {
+  .fixed {
+    max-width: 100vw;
+    overflow-x: hidden;
+  }
+}
+
+/* ─── Safe area for notched devices (iPhone X+) ─── */
+@supports (padding: env(safe-area-inset-top)) {
+  body {
+    padding-top: env(safe-area-inset-top);
+    padding-bottom: env(safe-area-inset-bottom);
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
+  }
+}
+
+/* ─── Reduced motion for accessibility ─── */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ─── Print styles for QR codes ─── */
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  .print-qr, .print-qr * {
+    visibility: visible;
+  }
+  .print-qr {
+    position: absolute;
+    left: 0;
+    top: 0;
+  }
+}
