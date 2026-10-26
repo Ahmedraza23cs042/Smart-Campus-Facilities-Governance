@@ -104,6 +104,7 @@ export default function App() {
   const [h_evidence, setH_Evidence] = useState(null);
   const [showAdminModal, setShowAdminModal] = useState(false);
   const [selectedTicket, setSelectedTicket] = useState(null);
+  const [mobileView, setMobileView] = useState('details');
   const [selectedHarassment, setSelectedHarassment] = useState(null);
   const [commentInput, setCommentInput] = useState('');
   const [editingCommentId, setEditingCommentId] = useState(null);
@@ -334,6 +335,7 @@ export default function App() {
     if (!ticket?.id) return;
     const { data } = await supabase.from('tickets_masked').select('*').eq('id', ticket.id).maybeSingle();
     setSelectedTicket(data || ticket);
+    setMobileView('details');
   };
 
   const unreadCount = notifications.filter(n => !n.is_read).length;
@@ -1777,29 +1779,75 @@ export default function App() {
         )}
 
         {selectedTicket && (
-          <div className="fixed inset-0 bg-black/70 backdrop-blur-md flex items-center justify-center p-4 z-[100] h-[100dvh] w-screen overflow-hidden">
-            <div className="anim-pop bg-white rounded-3xl w-full max-w-5xl h-[85vh] flex flex-col md:flex-row shadow-2xl overflow-hidden relative">
-              <button onClick={() => setSelectedTicket(null)} className="absolute top-4 right-4 bg-white hover:bg-red-500 hover:text-white text-gray-700 w-9 h-9 rounded-full flex items-center justify-center font-bold z-20 shadow-lg border"><Icons.X /></button>
-              <div className={`w-full ${(!isStudent || user?.rollNumber === selectedTicket.roll_number) ? 'md:w-1/2 border-r' : 'mx-auto max-w-3xl'} p-6 md:p-8 bg-gradient-to-b from-gray-50 to-white overflow-y-auto scrollbar-slim h-full`}>
-                <div className="flex justify-between items-start mb-6 pr-10"><h3 className="text-xl font-extrabold text-gray-900">Issue Details</h3><span className={`text-[10px] font-bold px-3 py-1 rounded-lg uppercase ${selectedTicket.status === 'RESOLVED' ? 'text-green-800 bg-green-100' : 'text-blue-800 bg-blue-100'}`}>{selectedTicket.status}</span></div>
-                <div className="space-y-5">
-                  <div><p className="text-[10px] font-bold text-gray-400 uppercase mb-1.5">Reported By</p><p className="font-mono text-sm text-gray-800 bg-white p-3 rounded-xl border">{(!isStudent || user?.rollNumber === selectedTicket.roll_number) ? selectedTicket.roll_number : 'Anonymous Student'}</p>{(isHOD || isGeneralAdmin) && (<p className="text-[10px] text-blue-700 bg-blue-50 border border-blue-200 rounded-lg p-2 mt-2 font-semibold flex items-center gap-1.5"><Icons.Info /> Admin view — full identity visible for action</p>)}</div>
-                  <div><p className="text-[10px] font-bold text-gray-400 uppercase mb-1.5">Location</p><p className="font-semibold text-sm text-gray-900 bg-white p-3 rounded-xl border">{selectedTicket.location}</p></div>
-                  {selectedTicket.map_coordinates && (<a href={`https://www.google.com/maps?q=${selectedTicket.map_coordinates.lat},${selectedTicket.map_coordinates.lng}`} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 text-xs font-bold text-blue-900 bg-blue-100 px-4 py-2.5 rounded-xl"><Icons.MapPin /> Open Map</a>)}
-                  <div><p className="text-[10px] font-bold text-gray-400 uppercase mb-1.5">Description</p><p className="text-sm text-gray-700 whitespace-pre-line bg-white p-4 rounded-xl border">{selectedTicket.description}</p></div>
-                  {getTicketImages(selectedTicket).length > 0 && (() => {
-                    const images = getTicketImages(selectedTicket);
-                    const canView = user?.rollNumber === selectedTicket.roll_number || !isStudent;
-                    return (
-                      <div><p className="text-[10px] font-bold text-gray-400 uppercase mb-2">Attached Evidence ({images.length})</p>{!canView ? (<div className="p-4 bg-gray-50 border rounded-xl flex items-center gap-3"><div className="w-10 h-10 rounded-full bg-gray-200 text-gray-500 flex items-center justify-center"><Icons.Lock /></div><div><p className="text-xs font-bold text-gray-700">Images are private</p><p className="text-[10px] text-gray-500">Only the ticket owner and HOD can view attached images.</p></div></div>) : (<div className="grid grid-cols-2 gap-3">{images.map((url, idx) => (<img key={idx} src={url} alt={`Evidence ${idx + 1}`} onClick={() => setLightboxImage(url)} className="w-full rounded-xl border shadow-sm object-cover max-h-48 cursor-zoom-in" />))}</div>)}</div>
-                    );
-                  })()}
+          <div className="fixed inset-0 bg-black/70 backdrop-blur-md flex items-center justify-center p-0 md:p-4 z-[100] h-[100dvh] w-screen overflow-hidden">
+            <div className="anim-pop bg-white rounded-none md:rounded-3xl w-full max-w-5xl h-full md:h-[85vh] flex flex-col md:flex-row shadow-2xl overflow-hidden relative">
+
+              {/* LEFT PANE: DETAILS */}
+              <div className={`w-full ${(!isStudent || user?.rollNumber === selectedTicket.roll_number) ? 'md:w-1/2 md:border-r h-full' : 'mx-auto max-w-3xl h-full'} flex-col bg-gray-50 overflow-hidden ${mobileView === 'chat' ? 'hidden md:flex' : 'flex'}`}>
+                
+                <div className="md:hidden p-4 bg-white border-b flex justify-between items-center sticky top-0 z-20">
+                  <h3 className="text-lg font-extrabold text-gray-900">Issue Details</h3>
+                  <button onClick={() => setSelectedTicket(null)} className="w-8 h-8 flex items-center justify-center bg-gray-100 rounded-full text-gray-600 hover:bg-red-100 hover:text-red-600 transition-colors">
+                    <Icons.X />
+                  </button>
                 </div>
+
+                <div className="flex-1 overflow-y-auto scrollbar-slim p-5 md:p-8">
+                  <div className="hidden md:flex justify-between items-start mb-6 pr-10">
+                    <h3 className="text-xl font-extrabold text-gray-900">Issue Details</h3>
+                    <span className={`text-[10px] font-bold px-3 py-1 rounded-lg uppercase ${selectedTicket.status === 'RESOLVED' ? 'text-green-800 bg-green-100' : 'text-blue-800 bg-blue-100'}`}>{selectedTicket.status}</span>
+                  </div>
+                  <div className="space-y-5">
+                    <div>
+                      <p className="text-[10px] font-bold text-gray-400 uppercase mb-1.5">Reported By</p>
+                      <p className="font-mono text-sm text-gray-800 bg-white p-3 rounded-xl border">{(!isStudent || user?.rollNumber === selectedTicket.roll_number) ? selectedTicket.roll_number : 'Anonymous Student'}</p>
+                      {(isHOD || isGeneralAdmin) && (<p className="text-[10px] text-blue-700 bg-blue-50 border border-blue-200 rounded-lg p-2 mt-2 font-semibold flex items-center gap-1.5"><Icons.Info /> Admin view — full identity visible for action</p>)}
+                    </div>
+                    <div><p className="text-[10px] font-bold text-gray-400 uppercase mb-1.5">Location</p><p className="font-semibold text-sm text-gray-900 bg-white p-3 rounded-xl border">{selectedTicket.location}</p></div>
+                    {selectedTicket.map_coordinates && (<a href={`https://www.google.com/maps?q=${selectedTicket.map_coordinates.lat},${selectedTicket.map_coordinates.lng}`} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 text-xs font-bold text-blue-900 bg-blue-100 px-4 py-2.5 rounded-xl"><Icons.MapPin /> Open Map</a>)}
+                    <div><p className="text-[10px] font-bold text-gray-400 uppercase mb-1.5">Description</p><p className="text-sm text-gray-700 whitespace-pre-line bg-white p-4 rounded-xl border">{selectedTicket.description}</p></div>
+                    {getTicketImages(selectedTicket).length > 0 && (() => {
+                      const images = getTicketImages(selectedTicket);
+                      const canView = user?.rollNumber === selectedTicket.roll_number || !isStudent;
+                      return (
+                        <div><p className="text-[10px] font-bold text-gray-400 uppercase mb-2">Attached Evidence ({images.length})</p>{!canView ? (<div className="p-4 bg-gray-50 border rounded-xl flex items-center gap-3"><div className="w-10 h-10 rounded-full bg-gray-200 text-gray-500 flex items-center justify-center"><Icons.Lock /></div><div><p className="text-xs font-bold text-gray-700">Images are private</p><p className="text-[10px] text-gray-500">Only the ticket owner and HOD can view attached images.</p></div></div>) : (<div className="grid grid-cols-2 gap-3">{images.map((url, idx) => (<img key={idx} src={url} alt={`Evidence ${idx + 1}`} onClick={() => setLightboxImage(url)} className="w-full rounded-xl border shadow-sm object-cover max-h-48 cursor-zoom-in" />))}</div>)}</div>
+                      );
+                    })()}
+                  </div>
+                </div>
+
+                {(!isStudent || user?.rollNumber === selectedTicket.roll_number) && (
+                  <div className="md:hidden p-4 bg-white border-t sticky bottom-0 z-20">
+                    <button onClick={() => setMobileView('chat')} className="w-full py-3.5 bg-gradient-to-r from-blue-900 to-indigo-800 text-white font-bold text-sm rounded-xl shadow-lg flex items-center justify-center gap-2">
+                      <Icons.Chat /> Open Secure Chat
+                    </button>
+                  </div>
+                )}
               </div>
+
+              {/* RIGHT PANE: CHAT */}
               {(!isStudent || user?.rollNumber === selectedTicket.roll_number) && (
-                <div className="w-full md:w-1/2 flex flex-col bg-white h-full relative">
-                  <div className="p-5 border-b bg-gradient-to-r from-white to-blue-50/50 shadow-sm z-10"><h3 className="text-sm font-bold text-gray-900 flex items-center gap-2"><span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>Secure Communication Thread</h3></div>
-                  <div className="flex-1 p-6 overflow-y-auto scrollbar-slim space-y-4 bg-[#e5ddd5]/20">
+                <div className={`w-full md:w-1/2 h-full flex-col bg-white relative ${mobileView === 'details' ? 'hidden md:flex' : 'flex'}`}>
+                  
+                  <div className="p-4 border-b bg-white z-20 flex items-center justify-between shrink-0">
+                    <div className="flex items-center gap-3">
+                      <button onClick={() => setMobileView('details')} className="md:hidden p-2 -ml-2 rounded-full hover:bg-gray-100 text-gray-700">
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7"></path></svg>
+                      </button>
+                      <h3 className="text-sm font-bold text-gray-900 flex items-center gap-2">
+                        <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                        Secure Chat
+                      </h3>
+                    </div>
+                    <button onClick={() => setSelectedTicket(null)} className="md:hidden w-8 h-8 flex items-center justify-center bg-gray-100 rounded-full text-gray-600 hover:bg-red-100 hover:text-red-600 transition-colors">
+                      <Icons.X />
+                    </button>
+                    <button onClick={() => setSelectedTicket(null)} className="hidden md:flex w-8 h-8 items-center justify-center bg-gray-100 rounded-full text-gray-600 hover:bg-red-100 hover:text-red-600 transition-colors">
+                      <Icons.X />
+                    </button>
+                  </div>
+
+                  <div className="flex-1 p-4 md:p-6 overflow-y-auto scrollbar-slim space-y-4 bg-[#e5ddd5]/20">
                     {(!selectedTicket.comments || selectedTicket.comments.length === 0) ? (<div className="text-center text-gray-400 text-xs mt-10 bg-gray-50 py-4 rounded-xl border border-dashed">No messages yet.</div>) : (
                       selectedTicket.comments.map(c => {
                         const isMine = c.sender === currentSenderName;
@@ -1817,9 +1865,13 @@ export default function App() {
                     )}
                     <div ref={chatEndRef} />
                   </div>
-                  <div className="p-4 border-t bg-gray-50 z-10">
+
+                  <div className="p-3 md:p-4 border-t bg-gray-50 z-10 shrink-0">
                     {selectedTicket.status === 'RESOLVED' ? (<p className="text-xs text-center text-gray-500 font-bold py-2.5 bg-gray-200 rounded-xl">Ticket closed.</p>) : (
-                      <form onSubmit={handleAddComment} className="flex gap-2"><input type="text" value={commentInput} onChange={(e) => setCommentInput(e.target.value)} placeholder="Type a message..." className="flex-1 border rounded-full px-5 py-2.5 text-sm focus:outline-none focus:border-blue-900" /><button type="submit" className="bg-gradient-to-r from-blue-900 to-indigo-800 text-white px-6 py-2.5 rounded-full text-sm font-bold shadow-lg">Send</button></form>
+                      <form onSubmit={handleAddComment} className="flex gap-2">
+                        <input type="text" value={commentInput} onChange={(e) => setCommentInput(e.target.value)} placeholder="Type a message..." className="flex-1 border rounded-full px-4 py-2.5 text-sm focus:outline-none focus:border-blue-900" />
+                        <button type="submit" className="bg-gradient-to-r from-blue-900 to-indigo-800 text-white px-5 py-2.5 rounded-full text-sm font-bold shadow-lg">Send</button>
+                      </form>
                     )}
                   </div>
                 </div>
