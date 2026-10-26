@@ -270,6 +270,21 @@ export default function App() {
   useEffect(() => { if (selectedTicket && chatEndRef.current) chatEndRef.current.scrollIntoView({ behavior: 'smooth' }); }, [selectedTicket?.comments]);
 
   useEffect(() => {
+    if (!selectedTicket?.id) return;
+
+    const ticketId = selectedTicket.id;
+    const refreshSelectedTicket = async () => {
+      const { data, error } = await supabase.from('tickets_masked').select('*').eq('id', ticketId).maybeSingle();
+      if (!error && data) setSelectedTicket(current => current?.id === ticketId ? data : current);
+    };
+    const channel = supabase.channel(`ticket-chat-${ticketId}`)
+      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'tickets', filter: `id=eq.${ticketId}` }, refreshSelectedTicket)
+      .subscribe();
+
+    return () => supabase.removeChannel(channel);
+  }, [selectedTicket?.id]);
+
+  useEffect(() => {
     const identifier = getMyIdentifier();
     if (!identifier) { setNotifications([]); return; }
     fetchNotifications();
@@ -1870,7 +1885,9 @@ export default function App() {
                     {selectedTicket.status === 'RESOLVED' ? (<p className="text-xs text-center text-gray-500 font-bold py-2.5 bg-gray-200 rounded-xl">Ticket closed.</p>) : (
                       <form onSubmit={handleAddComment} className="flex gap-2">
                         <input type="text" value={commentInput} onChange={(e) => setCommentInput(e.target.value)} placeholder="Type a message..." className="flex-1 border rounded-full px-4 py-2.5 text-sm focus:outline-none focus:border-blue-900" />
-                        <button type="submit" className="bg-gradient-to-r from-blue-900 to-indigo-800 text-white px-5 py-2.5 rounded-full text-sm font-bold shadow-lg">Send</button>
+                        <button type="submit" aria-label="Send message" title="Send message" className="w-11 h-11 shrink-0 bg-gradient-to-r from-blue-900 to-indigo-800 text-white rounded-full shadow-lg flex items-center justify-center">
+                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 12h14m-6-6 6 6-6 6" /></svg>
+                        </button>
                       </form>
                     )}
                   </div>
