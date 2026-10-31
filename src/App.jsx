@@ -1191,8 +1191,18 @@ export default function App() {
                   <img src="/admin_block.png" alt="MUET Smart Campus" className="absolute inset-0 w-full h-full object-cover" />
                   <div className="absolute inset-0 bg-gradient-to-br from-blue-950/95 via-indigo-900/85 to-purple-900/75"></div>
                   <div className="relative z-10 h-full flex flex-col justify-center p-6 md:p-8 lg:p-10 text-white">
-                    <h2 className="text-2xl md:text-3xl lg:text-4xl font-black leading-[1.15] tracking-tight mb-4">Next-Generation{' '}<span className="bg-gradient-to-r from-emerald-300 via-teal-200 to-cyan-200 bg-clip-text text-transparent">Campus Governance</span>{' '}& Facility Intelligence</h2>
-                    <p className="text-blue-100/90 leading-relaxed text-sm md:text-base max-w-xl mb-5">Engineered to solve real-world infrastructure challenges at MUET Jamshoro. Our platform utilizes advanced AI OCR card verification, real-time ticket routing, map pinning, and automated email dispatching.</p>
+                   
+<h2 className="text-2xl md:text-3xl lg:text-4xl font-black leading-[1.15] tracking-tight mb-4">
+  MUET Smart Campus System for Facilities Governance
+</h2>
+
+<p className="text-blue-100/90 leading-relaxed text-sm md:text-base max-w-xl mb-5">
+  A student-developed smart campus facilities management project for
+  Mehran University of Engineering & Technology (MUET), Jamshoro.
+  It helps students report campus maintenance issues, track complaint
+  progress, and communicate with the relevant department.
+</p>
+
                     <div className="flex flex-wrap gap-2">
                       {['AI OCR Verification', 'Email-Authenticated', 'Real-time Routing', 'Multi-Image Support'].map((f) => (<span key={f} className="text-[10px] md:text-[11px] font-semibold text-white bg-white/15 backdrop-blur border border-white/25 px-3 py-1.5 rounded-full shadow-sm">✓ {f}</span>))}
                     </div>
